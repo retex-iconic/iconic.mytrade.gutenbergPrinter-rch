@@ -436,6 +436,8 @@ public class PrinterCommands extends iconic.mytrade.gutenbergInterface.PrinterCo
 	
 	public void beginFiscalReceipt(boolean arg0) throws JposException
 	{
+		checkPrinterPaperLow();
+		
 		System.out.println("MAPOTO-EXEC BEGINFISCAL");
 		
 		if (SRTPrinterExtension.isPRT()){
@@ -1586,7 +1588,9 @@ public class PrinterCommands extends iconic.mytrade.gutenbergInterface.PrinterCo
 					// brutto ma per ora la stampante si incazza se si passa la tessera 
 					// e poi si chiude lo scontrino a zero senza vendere nulla
 					// oppure se nello scontrino non c'è nessun item fiscale
-					fiscalPrinterDriver.printRecItem("....................", 0, 0, aliquota, 0, "");
+					fiscalPrinterDriver.printRecItem("....................", 1, 0, aliquota, 0, "");
+					fiscalPrinterDriver.printRecVoidItem("....................", 1, 1, 1, 0, aliquota);
+//					fiscalPrinterDriver.printRecItem("....................", 0, 0, aliquota, 0, "");
 				}
 			}
 		}
@@ -4955,5 +4959,84 @@ public class PrinterCommands extends iconic.mytrade.gutenbergInterface.PrinterCo
 				
 			return (fiscalPrinterDriver.DailyPeriodicReport(reporttype, type));
 		}
+
+	    private void checkPrinterPaperLow()
+	    {
+	    	while (true)
+	    	{
+	    		
+		    	System.out.println("200726 - checkPrinterPaperLow");
+		    	
+		    	boolean errorFound = false;
+		    	boolean ret = false;
+		    	
+				try {
+					ret = fiscalPrinterDriver.getCoverOpen();
+				} catch (JposException e) {
+			    	System.out.println("200726 - getCoverOpen : "+e.getMessage());
+			    	errorFound = true;
+			    	ret = true;
+				}
+				System.out.println("200726 - Cover Open : " + ret);
+				if(ret) {
+			    	errorFound = true;
+				    MessageBox.showMessage("CoverOpen",null,MessageBox.OK);
+				}
+				
+		    	ret = false;
+		    	
+				try {
+					ret = fiscalPrinterDriver.getRecEmpty();
+				} catch (JposException e) {
+			    	System.out.println("200726 - getRecEmpty : "+e.getMessage());
+			    	errorFound = true;
+			    	ret = true;
+				}
+				System.out.println("200726 - Receipt Empty : " + ret);
+				if(ret) {
+			    	errorFound = true;
+				    MessageBox.showMessage("ReceiptEmpty",null,MessageBox.OK);
+				}
+		
+				if (ret == false) {
+					try {
+						ret = fiscalPrinterDriver.getRecNearEnd();
+					} catch (JposException e) {
+				    	System.out.println("200726 - getReceiptNearEnd : "+e.getMessage());
+				    	errorFound = true;
+				    	ret = true;
+					}
+					System.out.println("200726 - Receipt Near End : " + ret);
+					if(ret) {
+				    	errorFound = true;
+					    MessageBox.showMessage("ReceiptLow",null,MessageBox.OK);
+					}
+				}
+				
+		    	ret = false;
+		    	
+				try {
+					ret = fiscalPrinterDriver.getJrnNearEnd();
+				} catch (JposException e) {
+			    	System.out.println("200726 - getJournalNearEnd : "+e.getMessage());
+			    	errorFound = true;
+			    	ret = true;
+				}
+				System.out.println("200726 - Journal Near End : " + ret);
+				if(ret) {
+//			    	errorFound = true;
+				    MessageBox.showMessage("JournalLow",null,MessageBox.OK);
+				}
+				
+				if (!errorFound)
+					break;
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+				
+	    	}
+	    }
 		
 }

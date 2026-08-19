@@ -2462,37 +2462,30 @@ public class FiscalPrinterDriver implements jpos.FiscalPrinterControl17, StatusU
 	
 	private void xgetData(int i, int ai[], String as[]) throws JposException
 	{
-		int o = 0;
+		int retry = 5;
 		
-		fiscalPrinter.getData(i, ai, as);
-	}
-	private String xgetDailyData(String type) throws JposException
-	{
-		int index = Integer.parseInt(type);
-		
-        int[] icmd = {0};
-        StringBuffer sbcmd = new StringBuffer("");
-        icmd[0] = 2050;
-        sbcmd = new StringBuffer(type+"00");
-        directIO(0, icmd, sbcmd);
-        
-        String reply = sbcmd.toString();
-        if (index == 24) {
-        	try {
-        		String sRecNum = reply.substring(20, 24);
-        		reply = sRecNum;
-        	}
-        	catch (StringIndexOutOfBoundsException e) {
- 			   System.out.println("xgetDailyData - StringIndexOutOfBoundsException : " + e.getMessage());
- 			   reply = Sprint.f("%04d",0);
-        	}
-        }
-        else
-        {
-        	// da implementare caso per caso
-        }
-        
-        return (reply);
+		while (true) {
+			int errcode = 0;
+			retry--;
+			try {
+				fiscalPrinter.getData(i, ai, as);
+			}
+			catch ( JposException e) {
+				errcode = e.getErrorCode();
+				System.out.println("200726 - as[0] = "+as[0]+" - retry = "+retry);
+			}
+			if (as[0] != null || retry == 0) {
+				if (as[0] == null && retry == 0) {
+					OperatorDisplay.pleaseDisplay (R3define.PRINTERVERIFY);
+			    	throw new JposException(errcode);
+				}
+				break;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 	
     private static String[] split(String src, int len) {
