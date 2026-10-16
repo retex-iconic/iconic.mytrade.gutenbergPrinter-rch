@@ -4961,5 +4961,21 @@ public class PrinterCommands extends iconic.mytrade.gutenbergInterface.PrinterCo
 				
 			return (fiscalPrinterDriver.DailyPeriodicReport(reporttype, type));
 		}
+		
+//	    private static boolean writeOnClientDisplayIsBlocked = false;
+	    
+	    public void writeOnClientDisplay(boolean on, boolean blocked) {
+//	   		if (!blocked)
+//	   			writeOnClientDisplayIsBlocked = blocked;
+//	   		writeOnClientDisplay(on);
+//	   		if (blocked)
+//	   			writeOnClientDisplayIsBlocked = blocked;
+	    }
+	    
+	    static void writeOnClientDisplay(boolean on) {
+//	    	if (writeOnClientDisplayIsBlocked)
+//	    		return;
+//	    	AsynchronousEvent.go(null, new GutenbergAction(GutenbergActions.WriteOnClientDisplay, on));
+	    }
 
 }
